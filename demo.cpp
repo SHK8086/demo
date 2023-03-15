@@ -51,3 +51,27 @@ int main() {
   std::cout << "ECEF coordinates: (" << e.x << ", " << e.y << ", " << e.z << ")\n";
   return 0;
 }
+
+#import <Foundation/Foundation.h>
+
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        NSFileManager *fileManager = [NSFileManager defaultManager];
+        
+        // 获取目录路径
+        NSString *directoryPath = @"/path/to/your/directory";
+        
+        NSError *error;
+        NSArray *files = [fileManager contentsOfDirectoryAtPath:directoryPath error:&error];
+        
+        if (files == nil) {
+            NSLog(@"Error: %@", error.localizedDescription);
+        } else {
+            for (NSString *file in files) {
+                NSLog(@"%@", file);
+            }
+        }
+    }
+    return 0;
+}
+
