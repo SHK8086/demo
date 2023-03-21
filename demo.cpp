@@ -211,3 +211,35 @@ for (NSString *key in videoMap) {
     NSLog(@"%@ -> %@", key, value);
 }
 
+
+// 在当前视图控制器中，获取主窗口
+UIWindow *mainWindow = [UIApplication sharedApplication].keyWindow;
+
+// 创建子视图控制器
+UIViewController *childViewController = [[UIViewController alloc] init];
+childViewController.view.backgroundColor = [UIColor whiteColor];
+
+// 添加子视图控制器到主窗口
+[mainWindow.rootViewController addChildViewController:childViewController];
+[mainWindow addSubview:childViewController.view];
+[childViewController didMoveToParentViewController:mainWindow.rootViewController];
+
+// 在主窗口中创建一个按钮
+UIButton *button = [UIButton buttonWithType:UIButtonTypeSystem];
+button.frame = CGRectMake(20, 100, 100, 30);
+[button setTitle:@"Go to child" forState:UIControlStateNormal];
+
+// 添加按钮事件处理程序
+[button addTarget:self action:@selector(goToChildViewController) forControlEvents:UIControlEventTouchUpInside];
+
+// 将按钮添加到主窗口中
+[mainWindow addSubview:button];
+
+- (void)goToChildViewController {
+    // 在当前视图控制器中，获取子视图控制器
+    UIViewController *childViewController = self.childViewControllers.firstObject;
+
+    // 跳转到子视图控制器
+    [self.navigationController pushViewController:childViewController animated:YES];
+}
+
