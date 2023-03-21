@@ -182,3 +182,32 @@ using namespace cv;
 
 @end
 
+
+
+#import <Photos/Photos.h>
+
+// 获取所有视频的集合
+PHFetchResult *collections = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum subtype:PHAssetCollectionSubtypeSmartAlbumVideos options:nil];
+
+// 获取第一个视频集合
+PHAssetCollection *collection = collections.firstObject;
+
+// 获取视频资源
+PHFetchResult *videos = [PHAsset fetchAssetsInAssetCollection:collection options:nil];
+
+// 定义Map来保存视频的标识符和名称
+NSMutableDictionary<NSString *, NSString *> *videoMap = [NSMutableDictionary dictionary];
+
+// 遍历视频资源并将标识符和名称保存到Map中
+[videos enumerateObjectsUsingBlock:^(PHAsset *asset, NSUInteger idx, BOOL *stop) {
+    NSString *assetIdentifier = asset.localIdentifier;
+    NSString *assetName = [asset valueForKey:@"filename"];
+    videoMap[assetIdentifier] = assetName;
+}];
+
+// 输出Map中的数据
+for (NSString *key in videoMap) {
+    NSString *value = videoMap[key];
+    NSLog(@"%@ -> %@", key, value);
+}
+
