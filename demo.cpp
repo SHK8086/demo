@@ -243,3 +243,54 @@ button.frame = CGRectMake(20, 100, 100, 30);
     [self.navigationController pushViewController:childViewController animated:YES];
 }
 
+
+
+
+@interface ChildViewController : UIViewController
+@end
+
+@implementation ChildViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    self.view.backgroundColor = [UIColor whiteColor];
+
+    UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 200, 50)];
+    label.text = @"This is the child view controller.";
+    label.textAlignment = NSTextAlignmentCenter;
+    label.center = self.view.center;
+
+    [self.view addSubview:label];
+}
+
+@end
+
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    self.view.backgroundColor = [UIColor whiteColor];
+
+    ChildViewController *childViewController = [[ChildViewController alloc] init];
+    [self addChildViewController:childViewController];
+    [self.view addSubview:childViewController.view];
+    [childViewController didMoveToParentViewController:self];
+}
+
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    self.view.backgroundColor = [UIColor whiteColor];
+
+    ChildViewController *childViewController = [[ChildViewController alloc] init];
+    [self addChildViewController:childViewController];
+    [self.view addSubview:childViewController.view];
+    [childViewController didMoveToParentViewController:self];
+
+    UIButton *button = [UIButton buttonWithType:UIButtonTypeSystem];
+    button.frame = CGRectMake(20, 100, 100, 30);
+    [button setTitle:@"Go to child" forState:UIControlStateNormal];
+    [button addTarget:self action:@selector(goToChildViewController) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:
