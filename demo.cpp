@@ -1,4 +1,4 @@
-// 导入必要的头文件
+”// 导入必要的头文件
 #import <UIKit/UIKit.h>
 #import <Photos/Photos.h>
 #import <AVFoundation/AVFoundation.h>
@@ -95,3 +95,26 @@ if (targetCollection) {
 
 // 返回包含视频的数组
 return videos;
+
+
+
+#import <Foundation/Foundation.h>
+#import <Photos/Photos.h>
+
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        PHFetchResult *videoFetchResult = [PHAsset fetchAssetsWithMediaType:PHAssetMediaTypeVideo options:nil];
+        for (PHAsset *asset in videoFetchResult) {
+            NSArray<PHAssetResource *> *resources = [PHAssetResource assetResourcesForAsset:asset];
+            for (PHAssetResource *resource in resources) {
+                if (resource.type == PHAssetResourceTypePairedVideo ||
+                    resource.type == PHAssetResourceTypeVideo) {
+                    NSLog(@"%@", resource.originalFilename);
+                    break;
+                }
+            }
+        }
+    }
+    return 0;
+}
+
