@@ -118,3 +118,67 @@ int main(int argc, const char * argv[]) {
     return 0;
 }
 
+#import <UIKit/UIKit.h>
+#import <opencv2/opencv.hpp>
+#import <opencv2/videoio/cap_ios.h>
+
+using namespace cv;
+
+@interface ViewController : UIViewController
+@property (strong, nonatomic) NSURL *videoURL1;
+@property (strong, nonatomic) NSURL *videoURL2;
+@end
+
+@implementation ViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // 请将下面的路径替换为你的实际视频 NSURL 路径
+    self.videoURL1 = [NSURL URLWithString:@"path_to_your_first_video"];
+    self.videoURL2 = [NSURL URLWithString:@"path_to_your_second_video"];
+
+    [self compareBrightnessOfVideos];
+}
+
+- (void)compareBrightnessOfVideos {
+    VideoCapture video1, video2;
+    video1.open(self.videoURL1.path.UTF8String);
+    video2.open(self.videoURL2.path.UTF8String);
+
+    if (!video1.isOpened() || !video2.isOpened()) {
+        NSLog(@"无法打开视频");
+        return;
+    }
+
+    int frameCount1 = (int)video1.get(CAP_PROP_FRAME_COUNT);
+    int frameCount2 = (int)video2.get(CAP_PROP_FRAME_COUNT);
+    int minFrameCount = MIN(frameCount1, frameCount2);
+
+    Mat frame1, frame2, grayFrame1, grayFrame2;
+    for (int i = 0; i < minFrameCount; i++) {
+        video1 >> frame1;
+        video2 >> frame2;
+
+        if (frame1.empty() || frame2.empty()) {
+            NSLog(@"读取帧失败");
+            break;
+        }
+
+        // 转换为灰度图像
+        cvtColor(frame1, grayFrame1, COLOR_BGR2GRAY);
+        cvtColor(frame2, grayFrame2, COLOR_BGR2GRAY);
+
+        // 计算每帧的平均亮度
+        double avgBrightness1 = mean(grayFrame1)[0];
+        double avgBrightness2 = mean(grayFrame2)[0];
+        double brightnessDifference = fabs(avgBrightness1 - avgBrightness2);
+
+        NSLog(@"帧 %d 亮度差异: %f", i, brightnessDifference);
+    }
+
+    video1.release();
+    video2.release();
+}
+
+@end
+
