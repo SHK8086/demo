@@ -75,3 +75,110 @@ int main(int argc, const char * argv[]) {
     return 0;
 }
 
+#import <UIKit/UIKit.h>
+#import <Photos/Photos.h>
+#import <AVFoundation/AVFoundation.h>
+#import <opencv2/opencv.hpp>
+
+@interface ViewController : UIViewController
+
+@end
+
+@implementation ViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    [self fetchAndCompareVideosFromAlbum1:@"相册1" album2:@"相册2"];
+}
+
+- (void)fetchAndCompareVideosFromAlbum1:(NSString *)album1 album2:(NSString *)album2 {
+    NSMutableArray *videos1 = [self fetchVideosFromAlbum:album1];
+    NSMutableArray *videos2 = [self fetchVideosFromAlbum:album2];
+
+    for (NSInteger i = 0; i < videos1.count; i++) {
+        PHAsset *videoAsset1 = videos1[i];
+        PHAsset *videoAsset2 = videos2[i];
+
+        __block NSURL *videoUrl1;
+        __block NSURL *videoUrl2;
+
+        dispatch_group_t group = dispatch_group_create();
+
+        dispatch_group_enter(group);
+        [[PHImageManager defaultManager] requestAVAssetForVideo:videoAsset1 options:nil resultHandler:^(AVAsset *avAsset, AVAudioMix *audioMix, NSDictionary *info) {
+            videoUrl1 = [(AVURLAsset *)avAsset URL];
+            dispatch_group_leave(group);
+        }];
+
+        dispatch_group_enter(group);
+        [[PHImageManager defaultManager] requestAVAssetForVideo:videoAsset2 options:nil resultHandler:^(AVAsset *avAsset, AVAudioMix *audioMix, NSDictionary *info) {
+            videoUrl2 = [(AVURLAsset *)avAsset URL];
+            dispatch_group_leave(group);
+        }];
+
+        dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
+
+        [self compareVideos:videoUrl1 videoUrl2:videoUrl2];
+    }
+}
+
+- (NSMutableArray *)fetchVideosFromAlbum:(NSString *)albumName {
+    NSMutableArray *videos = [NSMutableArray array];
+    PHFetchOptions *fetchOptions = [[PHFetchOptions alloc] init];
+    fetchOptions.predicate = [NSPredicate predicateWithFormat:@"mediaType = %d", PHAssetMediaTypeVideo];
+
+    PHAssetCollection *targetCollection;
+    PHFetchResult *collections = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum subtype:PHAssetCollectionSubtypeAny options:nil];
+
+    for (PHAssetCollection *collection in collections) {
+        if ([collection.localizedTitle isEqualToString:albumName]) {
+            targetCollection = collection;
+            break;
+        }
+    }
+
+    if (targetCollection) {
+        PHFetchResult *assets = [PHAsset fetchAssetsInAssetCollection:targetCollection options:fetchOptions];
+
+        for (PHAsset *asset in assets) {
+            [videos addObject:asset];
+        }
+    } else {
+        NSLog(@"相册未找到");
+    }
+
+    return videos;
+}
+
+- (void)compareVideos:(NSURL *)videoUrl1 videoUrl2:(NSURL *)videoUrl2 {
+    // TODO: 使用 OpenCV 逐帧计算亮度差异并输出结果
+}
+
+@end
+// Load the image
+NSString *imagePath = [[NSBundle mainBundle] pathForResource:@"example" ofType:@"jpg"];
+cv::Mat inputImage = cv::imread([imagePath UTF8String]);
+
+// Check if the image was loaded
+if (inputImage.empty()) {
+    NSLog(@"Failed to load the image.");
+    return;
+}
+
+// Convert the image to grayscale
+cv::Mat grayImage;
+cv::cvtColor(inputImage, grayImage, cv::COLOR_BGR2GRAY);
+
+// Save the grayscale image to the app's Documents folder
+NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+NSString *documentsDirectory = [paths objectAtIndex:0];
+NSString *grayImagePath = [documentsDirectory stringByAppendingPathComponent:@"gray_image.png"];
+
+if (cv::imwrite([grayImagePath UTF8String], grayImage)) {
+    NSLog(@"Grayscale image saved at: %@", grayImagePath);
+} else {
+    NSLog(@"Failed to save the grayscale image.");
+}
+
+
